@@ -141,6 +141,7 @@ _.functions = _.methods = function(obj) {
   return names.sort();
 };
 
+// 浅拷贝
 // Extend a given object with all the properties in passed-in object(s).
 _.extend = createAssigner(_.allKeys);
 

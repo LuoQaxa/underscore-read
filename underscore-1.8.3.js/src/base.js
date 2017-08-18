@@ -94,17 +94,31 @@
     return cb(value, context, Infinity);
   };
 
+
   // An internal function for creating assigner functions.
   var createAssigner = function(keysFunc, undefinedOnly) {
+    // 返回的是一个函数
+    // 经典闭包
     return function(obj) {
+      // 如果参数<2，即只有一个参数或没有参数或者null，就返回object
       var length = arguments.length;
       if (length < 2 || obj == null) return obj;
+      // 从第二个参数开始遍历
       for (var index = 1; index < length; index++) {
+        // source对象，从第二个参数开始的对象
         var source = arguments[index],
+            // createAssigner 函数传入的keysFunc
+            // 通过keysFunc来提取对象的keys
+            // keysFunc可以是_allKeys 或者 _keys
             keys = keysFunc(source),
+            // 对象的属性个数
             l = keys.length;
         for (var i = 0; i < l; i++) {
+          // 遍历keys
           var key = keys[i];
+           // _.defaults = createAssigner(_.allKeys, true);
+           // 传入的undefinedOnly 为true
+           // 只有当obj[key] === void 0 时，即原对象没有key这个属性时才赋值
           if (!undefinedOnly || obj[key] === void 0) obj[key] = source[key];
         }
       }
