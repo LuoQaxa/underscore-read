@@ -3,6 +3,7 @@
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 //     Underscore may be freely distributed under the MIT license.
 
+// 自执行函数，并把全局对象传入，在浏览器环境下是window，在服务端是exports
 (function() {
 
   // Baseline setup
@@ -12,12 +13,14 @@
   var root = this;
 
   // Save the previous value of the `_` variable.
+
   var previousUnderscore = root._;
 
   // Save bytes in the minified (but not gzipped) version:
   var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
 
   // Create quick reference variables for speed access to core prototypes.
+  // 避免每次都去原型链上查找值，将核心方法全部缓存起来
   var
     push             = ArrayProto.push,
     slice            = ArrayProto.slice,
@@ -33,6 +36,26 @@
     nativeCreate       = Object.create;
 
   // Naked function reference for surrogate-prototype-swapping.
+  // 不太明白这个空的匿名函数的作用，stackoverflow上的回答是：
+  //    "Surrogate prototype swapping" (which I doubt is a real thing to begin with) is using an 
+  //    object only to assign to its prototype. That variable is used only once:
+  // 并且还举了一个栗子：
+  // Naked function reference for surrogate-prototype-swapping.
+  /*var Ctor = function(){};
+    var nativeCreate = Object.create;
+    // An internal function for creating a new object that inherits from another.
+    var baseCreate = function(prototype) {
+      if (!_.isObject(prototype)) return {};
+      if (nativeCreate) return nativeCreate(prototype);
+      Ctor.prototype = prototype;
+      var result = new Ctor;
+      Ctor.prototype = null;
+      return result;
+    };
+    //It is used to make a cross-browser version of Object.create. You can't create a new 
+    //instance of a prototype object directly, so you create a temporary object with your 
+    //prototype object as its prototype and return a new instance of that.
+  */
   var Ctor = function(){};
 
   // Create a safe reference to the Underscore object for use below.

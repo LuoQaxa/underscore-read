@@ -101,6 +101,7 @@ _.mapObject = function(obj, iteratee, context) {
   iteratee = cb(iteratee, context);
   var keys =  _.keys(obj),
         length = keys.length,
+        // 返回的对象
         results = {},
         currentKey;
     for (var index = 0; index < length; index++) {
@@ -111,6 +112,7 @@ _.mapObject = function(obj, iteratee, context) {
 };
 
 // Convert an object into a list of `[key, value]` pairs.
+// 将对象转为key-value对的数组形式
 _.pairs = function(obj) {
   var keys = _.keys(obj);
   var length = keys.length;
@@ -122,6 +124,10 @@ _.pairs = function(obj) {
 };
 
 // Invert the keys and values of an object. The values must be serializable.
+// 什么是序列化？序列化有什么作用
+// 序列化的作用就是为了存储，所以从后端返回的的数据需要JSON.parse()反序列化后才能使用，就是后端进行了
+// 序列化数据，才能传输到前端。
+// 参考：http://www.cnblogs.com/craftsman-gao/p/5130567.html
 _.invert = function(obj) {
   var result = {};
   var keys = _.keys(obj);
