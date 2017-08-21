@@ -59,6 +59,19 @@
   var Ctor = function(){};
 
   // Create a safe reference to the Underscore object for use below.
+  // 实现不用new关键字创建实例对象
+  /*
+    function Point(x,y){
+      if(this instanceof Point) {
+        this.x = x;
+        this.y = y;
+      }else {
+        return new Point(x,y)
+      }
+    }
+    可以通过判断this的值来判断是否有用new关键字，因为如果没有用new关键字，Point(x,y)相当于普通函数调用，this的指向window
+    而如果new关键字创建的对象是继承Point.prototype的。
+  */
   var _ = function(obj) {
     if (obj instanceof _) return obj;
     if (!(this instanceof _)) return new _(obj);
@@ -150,17 +163,27 @@
   };
 
   // An internal function for creating a new object that inherits from another.
+  // _.create()用到了这个内部方法
   var baseCreate = function(prototype) {
+    // 如果不是对象就返回空对象
     if (!_.isObject(prototype)) return {};
+    // 如果有nativeCreate方法 Es5 Object.create()，就使用
     if (nativeCreate) return nativeCreate(prototype);
+    // 匿名函数的原型是传入的需要继承的原型对象
     Ctor.prototype = prototype;
+    // var Ctor = function(){};
+    // new 关键字让result的原型是Ctor.prototype，这样就实现了继承
     var result = new Ctor;
     Ctor.prototype = null;
     return result;
   };
 
+
   var property = function(key) {
+    // 返回的内部函数保留着对外层函数key的引用，这是一个闭包
     return function(obj) {
+      // 如果obj是==null ，返回 undefined 否则返回obj[key]
+      // 获取obj的key属性
       return obj == null ? void 0 : obj[key];
     };
   };
@@ -169,9 +192,23 @@
   // should be iterated as an array or as an object
   // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
   // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
+
+  // 由于js中的所有数字都是64位浮点数。并且规定64位的组成是：
+  /*
+    第1位：符号位，0表示正数，1表示负数
+    第2位-12位：指数部分
+    第13-64位：小数部分（即有效数字）
+    符号位决定了一个数的正负，指数部分决定了数值的大小，小数部分决定了数值的精度。
+    IEEE 754 规定，有效数字第一位默认总是1，不保存在64位浮点数之中。也就是说，有效数字总是1.xx...xx的形式，
+    其中xx..xx的部分保存在64位浮点数之中，最长可能为52位。因此，JavaScript 提供的有效数字最长为53个二进制位。
+  */
   var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+
   var getLength = property('length');
+
+  // 是否是类数组对象
   var isArrayLike = function(collection) {
+    // 包括数组、arguments、HTML Collection 以及 NodeList 等等
     var length = getLength(collection);
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
@@ -184,6 +221,7 @@
   // Utility Functions
 
   // Add a "chain" function. Start chaining a wrapped Underscore object.
+  // 添加chain属性，使对象支持链式调用
   _.chain = function(obj) {
     var instance = _(obj);
     instance._chain = true;
