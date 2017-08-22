@@ -42,6 +42,7 @@ var flatten = function(input, shallow, strict, startIndex) {
   var output = [], idx = 0;
   for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
     var value = input[i];
+    // 如果input中的当前项是类数组、数组。
     if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
       //flatten current level of array or arguments object
       if (!shallow) value = flatten(value, shallow, strict);

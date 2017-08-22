@@ -155,9 +155,12 @@ _.extend = createAssigner(_.allKeys);
 // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 _.extendOwn = _.assign = createAssigner(_.keys);
 
+// similar to _findIndex but for keys in objects.return the key where the predicate truth test passes or undefined
 // Returns the first key on an object that passes a predicate test
 _.findKey = function(obj, predicate, context) {
+  // 不知道这个predicate是啥
   predicate = cb(predicate, context);
+  // 先赋值，然后再声明key，这样就只用写一个var
   var keys = _.keys(obj), key;
   for (var i = 0, length = keys.length; i < length; i++) {
     key = keys[i];
@@ -166,13 +169,18 @@ _.findKey = function(obj, predicate, context) {
 };
 
 // Return a copy of the object only containing the whitelisted properties.
+
 _.pick = function(object, oiteratee, context) {
   var result = {}, obj = object, iteratee, keys;
   if (obj == null) return result;
+  // 如果过滤条件是函数
   if (_.isFunction(oiteratee)) {
+    // 获取对象的所有的属性
     keys = _.allKeys(obj);
+    // 获得回调
     iteratee = optimizeCb(oiteratee, context);
   } else {
+    // 
     keys = flatten(arguments, false, false, 1);
     iteratee = function(value, key, obj) { return key in obj; };
     obj = Object(obj);
