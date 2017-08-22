@@ -74,6 +74,7 @@
   */
   var _ = function(obj) {
     if (obj instanceof _) return obj;
+
     if (!(this instanceof _)) return new _(obj);
     this._wrapped = obj;
   };
@@ -82,6 +83,7 @@
   // backwards-compatibility for the old `require()` API. If we're in
   // the browser, add `_` as a global object.
   if (typeof exports !== 'undefined') {
+    // 如果exports不是undefined
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = _;
     }
@@ -97,6 +99,8 @@
   // of the passed-in callback, to be repeatedly applied in other Underscore
   // functions.
   var optimizeCb = function(func, context, argCount) {
+   
+
     if (context === void 0) return func;
     switch (argCount == null ? 3 : argCount) {
       case 1: return function(value) {
@@ -112,6 +116,9 @@
         return func.call(context, accumulator, value, index, collection);
       };
     }
+     // call比apply快很多
+     // apply在执行前要对数组进行一系列的检验和深拷贝
+     // https://segmentfault.com/q/1010000007894513
     return function() {
       return func.apply(context, arguments);
     };
@@ -120,6 +127,11 @@
   // A mostly-internal function to generate callbacks that can be applied
   // to each element in a collection, returning the desired result — either
   // identity, an arbitrary callback, a property matcher, or a property accessor.
+  
+  //   _.identity = function(value) {
+  //   return value;
+  // };
+
   var cb = function(value, context, argCount) {
     if (value == null) return _.identity;
     if (_.isFunction(value)) return optimizeCb(value, context, argCount);
@@ -240,10 +252,19 @@
   };
 
   // Add your own custom functions to the Underscore object.
+
   _.mixin = function(obj) {
+    // 遍历 obj 的 key，将方法挂载到 Underscore 上
+    // 其实是将方法浅拷贝到 _.prototype 上
     _.each(_.functions(obj), function(name) {
+      // 直接把方法挂载到 _[name] 上
+      // 调用类似 _.myFunc([1, 2, 3], ..)
       var func = _[name] = obj[name];
+      // 浅拷贝
+      // 将 name 方法挂载到 _ 对象的原型链上，使之能 OOP 调用
+      // 除了要在_上挂载方法，还要在原型上加载，如果只在原型上加载，就不是静态方法，必须是实例才有这个方法
       _.prototype[name] = function() {
+        //
         var args = [this._wrapped];
         push.apply(args, arguments);
         return result(this, func.apply(_, args));
@@ -260,6 +281,7 @@
     _.prototype[name] = function() {
       var obj = this._wrapped;
       method.apply(obj, arguments);
+
       if ((name === 'shift' || name === 'splice') && obj.length === 0) delete obj[0];
       return result(this, obj);
     };
