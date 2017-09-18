@@ -72,10 +72,19 @@
     可以通过判断this的值来判断是否有用new关键字，因为如果没有用new关键字，Point(x,y)相当于普通函数调用，this的指向window
     而如果new关键字创建的对象是继承Point.prototype的。
   */
+  // _ 是一个构造函数
+  // 支持无 new 调用的构造函数 
+  // 将传入的参数赋值给this._wrapper 属性
+  // OOP调用时，_ 相当于一个构造函数
+  // _([1,2,3]).each(alert)
+  // _([1,2,3])相当于无new构造了一个新的对象
+  // 调用了该对象的each方法，该方法在该对象构造函数的原型链上
   var _ = function(obj) {
+    // 如果是_的实例
     if (obj instanceof _) return obj;
-
+    // 如果不是_的实例，并且没有用new的调用方式，即this不是_的实例
     if (!(this instanceof _)) return new _(obj);
+    // 最后将传入的参数赋给this._wrapped，将传入的参数包装一遍
     this._wrapped = obj;
   };
 
@@ -83,7 +92,6 @@
   // backwards-compatibility for the old `require()` API. If we're in
   // the browser, add `_` as a global object.
   if (typeof exports !== 'undefined') {
-    // 如果exports不是undefined
     if (typeof module !== 'undefined' && module.exports) {
       exports = module.exports = _;
     }
@@ -98,12 +106,13 @@
   // Internal function that returns an efficient (for current engines) version
   // of the passed-in callback, to be repeatedly applied in other Underscore
   // functions.
+  // 优化回调，如果传入的参数比较少，就用call来代替apply
   var optimizeCb = function(func, context, argCount) {
-   
-
     if (context === void 0) return func;
     switch (argCount == null ? 3 : argCount) {
       case 1: return function(value) {
+        // 如果没有argCount参数，则返回一个函数，这个函数执行时
+        // call传入的上下文环境
         return func.call(context, value);
       };
       case 2: return function(value, other) {
@@ -136,6 +145,7 @@
     if (value == null) return _.identity;
     if (_.isFunction(value)) return optimizeCb(value, context, argCount);
     if (_.isObject(value)) return _.matcher(value);
+    // property 
     return _.property(value);
   };
   _.iteratee = function(value, context) {
@@ -247,6 +257,7 @@
   // underscore functions. Wrapped objects may be chained.
 
   // Helper function to continue chaining intermediate results.
+
   var result = function(instance, obj) {
     return instance._chain ? _(obj).chain() : obj;
   };
@@ -256,6 +267,7 @@
   _.mixin = function(obj) {
     // 遍历 obj 的 key，将方法挂载到 Underscore 上
     // 其实是将方法浅拷贝到 _.prototype 上
+    // _.functions是要找到obj里面的所有方法属性
     _.each(_.functions(obj), function(name) {
       // 直接把方法挂载到 _[name] 上
       // 调用类似 _.myFunc([1, 2, 3], ..)
@@ -263,8 +275,8 @@
       // 浅拷贝
       // 将 name 方法挂载到 _ 对象的原型链上，使之能 OOP 调用
       // 除了要在_上挂载方法，还要在原型上加载，如果只在原型上加载，就不是静态方法，必须是实例才有这个方法
+      // 挂载到_原型上
       _.prototype[name] = function() {
-        //
         var args = [this._wrapped];
         push.apply(args, arguments);
         return result(this, func.apply(_, args));
